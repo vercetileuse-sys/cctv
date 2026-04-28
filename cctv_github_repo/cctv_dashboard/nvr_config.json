@@ -1,0 +1,238 @@
+{
+  "_instructions": "To add more NVRs later, copy one block and fill in the details. Set enabled: false to skip a device temporarily.",
+
+  "dvr_nvr_list": [
+
+    {
+      "name": "AGDVR 1",
+      "ip_address": "192.168.2.237",
+      "port": 80,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [27, 28, 29, 30, 31, 32]
+    },
+    {
+      "name": "AGDVR 2",
+      "ip_address": "192.168.2.238",
+      "port": 81,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+    },
+    {
+      "name": "AGDVR 3",
+      "ip_address": "192.168.2.239",
+      "port": 82,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [26, 27, 28, 29, 30, 31, 32]
+    },
+    {
+      "name": "AGDVR 4",
+      "ip_address": "192.168.2.252",
+      "port": 83,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [25, 26, 27, 28, 29, 30, 31, 32]
+    },
+    {
+      "name": "AGNVR 1",
+      "ip_address": "192.168.0.254",
+      "port": 80,
+      "username": "admin",
+      "password": "P@$$w0rd",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [30, 31, 32]
+    },
+    {
+      "name": "NEW DVR 1",
+      "ip_address": "192.168.2.250",
+      "port": 82,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [30, 31, 32]
+    },
+    {
+      "name": "NEW DVR 3",
+      "ip_address": "192.168.2.243",
+      "port": 83,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+    },
+    {
+      "name": "DVR 6",
+      "ip_address": "192.168.2.246",
+      "port": 86,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "DVR 7",
+      "ip_address": "192.168.2.247",
+      "port": 90,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [13, 14, 15, 16]
+    },
+    {
+      "name": "DVR 8",
+      "ip_address": "192.168.2.248",
+      "port": 88,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "DVR 9",
+      "ip_address": "192.168.2.249",
+      "port": 89,
+      "username": "admin",
+      "password": "p@ssword",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": [11, 12, 13, 14, 15, 16]
+    },
+    {
+      "name": "NVR-201",
+      "ip_address": "192.168.100.201",
+      "port": 81,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-202",
+      "ip_address": "192.168.100.202",
+      "port": 82,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-203",
+      "ip_address": "192.168.100.203",
+      "port": 83,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-204",
+      "ip_address": "192.168.100.204",
+      "port": 84,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-205",
+      "ip_address": "192.168.100.205",
+      "port": 85,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-206",
+      "ip_address": "192.168.100.206",
+      "port": 86,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "NVR-208",
+      "ip_address": "192.168.100.208",
+      "port": 88,
+      "username": "admin1",
+      "password": "Aura@321#",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "Hi-tech DVR1",
+      "ip_address": "192.168.3.245",
+      "port": 81,
+      "username": "admin",
+      "password": "P@ssw0rd",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "Hi-tech DVR2",
+      "ip_address": "192.168.3.246",
+      "port": 82,
+      "username": "admin",
+      "password": "P@ssw0rd",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "Hi-tech DVR3",
+      "ip_address": "192.168.3.246",
+      "port": 83,
+      "username": "admin",
+      "password": "P@ssw0rd",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "Hi-tech DVR4",
+      "ip_address": "192.168.3.247",
+      "port": 84,
+      "username": "admin",
+      "password": "P@ssw0rd",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    },
+    {
+      "name": "Growth DVR",
+      "ip_address": "192.168.70.201",
+      "port": 80,
+      "username": "admin",
+      "password": "9811337847_G",
+      "brand": "hikvision",
+      "enabled": true,
+      "skip_channels": []
+    }
+
+  ]
+}

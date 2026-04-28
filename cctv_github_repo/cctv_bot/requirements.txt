@@ -1,0 +1,6 @@
+requests
+openpyxl
+urllib3
+pillow
+pytesseract
+opencv-python

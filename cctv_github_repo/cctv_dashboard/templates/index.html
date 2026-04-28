@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCTV Surveillance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090f;--s1:#0c1018;--s2:#131a24;--s3:#1a2333;--s4:#22304a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --blue:#4f8ef7;--blue2:#7eb3ff;--cyan:#22d3ee;
+  --green:#22c55e;--red:#f43f5e;--orange:#f97316;
+  --yellow:#eab308;--purple:#a855f7;
+  --text:#eef2ff;--text2:#94a3b8;--text3:#475569;
+  --r:12px;--rs:8px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-30%;left:-10%;width:55%;height:80%;
+  background:radial-gradient(ellipse,rgba(79,142,247,0.05) 0%,transparent 65%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── Sidebar ── */
+.sidebar{width:228px;background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:60}
+.logo-area{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-box{width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#4f8ef7,#a855f7);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.logo-name{font-size:17px;font-weight:800;letter-spacing:-0.3px}
+.logo-name em{color:var(--blue);font-style:normal}
+.logo-tag{font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;margin-top:5px;margin-left:42px}
+.nav-wrap{padding:12px 8px;flex:1;overflow-y:auto}
+.nav-sec{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);
+  padding:10px 8px 5px;font-family:'JetBrains Mono',monospace}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
+  cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);
+  transition:all 0.15s;margin-bottom:1px;border:1px solid transparent}
+.nav-btn:hover{background:rgba(255,255,255,0.04);color:var(--text2)}
+.nav-btn.active{background:rgba(79,142,247,0.1);color:var(--blue2);border-color:rgba(79,142,247,0.18)}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;
+  border-radius:20px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:22px;text-align:center}
+.sidebar-foot{padding:12px 14px;border-top:1px solid var(--border)}
+.foot-l{font-size:10px;font-weight:600;color:var(--text2);margin-bottom:2px}
+.foot-v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* ── Main ── */
+.main{margin-left:228px;flex:1;display:flex;flex-direction:column}
+.topbar{background:rgba(12,16,24,0.94);border-bottom:1px solid var(--border);
+  padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(20px)}
+.pg-title{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.pg-sub{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.chip-status{display:flex;align-items:center;gap:6px;background:var(--s2);
+  border:1px solid var(--border2);border-radius:20px;padding:5px 12px;
+  font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.5s ease-in-out infinite}
+.dot.scan{background:var(--orange);box-shadow:0 0 8px var(--orange);animation:blink 0.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;
+  border:none;cursor:pointer;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;
+  transition:all 0.15s;white-space:nowrap}
+.btn:disabled{opacity:0.38;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 14px rgba(79,142,247,0.35)}
+.btn-primary:hover:not(:disabled){background:#3d7ef5;transform:translateY(-1px)}
+.btn-ghost{background:var(--s2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover:not(:disabled){background:var(--s3);color:var(--text)}
+.btn-green{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
+.btn-green:hover:not(:disabled){background:rgba(34,197,94,0.18)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:6px}
+.content{padding:20px 24px;flex:1}
+
+/* Progress */
+.prog-wrap{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:13px 16px;margin-bottom:18px;display:none}
+.prog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.prog-dev{font-size:13px;font-weight:600}
+.prog-ct{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)}
+.prog-track{background:var(--s3);border-radius:4px;height:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.5s ease;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 10px rgba(79,142,247,0.5)}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 14px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.2s}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--ct,var(--blue));border-radius:var(--r) var(--r) 0 0}
+.stat-ico{position:absolute;right:12px;top:12px;font-size:22px;opacity:0.09}
+.stat-lbl{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.stat-val{font-size:32px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--cc,var(--text))}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:5px;font-family:'JetBrains Mono',monospace}
+
+/* DVR vertical list */
+.dvr-list{display:flex;flex-direction:column;gap:8px}
+.dvr-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color 0.2s}
+.dvr-item.c-ok{border-color:rgba(34,197,94,0.12)}
+.dvr-item.c-warn{border-color:rgba(249,115,22,0.2)}
+.dvr-item.c-err{border-color:rgba(244,63,94,0.2)}
+.dvr-item-head{display:flex;align-items:center;padding:12px 16px;cursor:pointer;
+  background:var(--s2);gap:12px;user-select:none;transition:background 0.15s}
+.dvr-item-head:hover{background:var(--s3)}
+.dind{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dind.ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dind.warn{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.dind.err{background:var(--red);box-shadow:0 0 6px var(--red)}
+.dvr-info{flex:1;min-width:0}
+.dvr-nm{font-size:14px;font-weight:700}
+.dvr-ip-wrap{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px}
+.ip-link{color:var(--blue2);text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:3px;cursor:pointer;transition:color 0.15s;font-weight:600}
+.ip-link:hover{color:var(--cyan)}
+.dvr-item-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;
+  font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.b-ok{background:rgba(34,197,94,0.12);color:var(--green)}
+.b-warn{background:rgba(249,115,22,0.12);color:var(--orange)}
+.b-err{background:rgba(244,63,94,0.12);color:var(--red)}
+.b-info{background:rgba(79,142,247,0.12);color:var(--blue2)}
+.dvr-time-mono{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.dvr-time-mono span{color:var(--blue2)}
+.chevron{font-size:13px;color:var(--text3);transition:transform 0.25s;flex-shrink:0;margin-left:4px}
+.chevron.open{transform:rotate(90deg)}
+.dvr-time-strip{padding:6px 16px;border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text3);
+  display:flex;align-items:center;gap:14px}
+.dvr-time-strip span{color:var(--blue2)}
+.dvr-cam-panel{display:none;border-top:1px solid var(--border)}
+.dvr-cam-panel.open{display:block}
+.dvr-cam-table{width:100%;border-collapse:collapse}
+.dvr-cam-table th{padding:8px 14px;text-align:left;font-size:9px;letter-spacing:1.8px;
+  text-transform:uppercase;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);
+  background:var(--s2);font-family:'JetBrains Mono',monospace}
+.dvr-cam-table td{padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+.dvr-cam-table tbody tr:last-child td{border-bottom:none}
+.dvr-cam-table tbody tr:hover td{background:rgba(255,255,255,0.02)}
+.dvr-cam-table tbody tr.issue td{background:rgba(244,63,94,0.025)}
+.cam-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);text-align:center;width:28px}
+.cam-n{font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+.ct-clear{background:rgba(34,197,94,0.1);color:var(--green)}
+.ct-night{background:rgba(79,142,247,0.1);color:var(--blue2)}
+.ct-warn{background:rgba(249,115,22,0.1);color:var(--orange)}
+.ct-err{background:rgba(244,63,94,0.1);color:var(--red)}
+.rec-d{width:8px;height:8px;border-radius:50%;display:inline-block;vertical-align:middle}
+.r-yes{background:var(--red);box-shadow:0 0 5px var(--red)}
+.r-no{background:var(--text3)}.r-unk{background:var(--orange)}
+.prev-btn{background:rgba(79,142,247,0.1);color:var(--blue2);border:1px solid rgba(79,142,247,0.2);
+  padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;transition:all 0.15s}
+.prev-btn:hover{background:rgba(79,142,247,0.2);border-color:rgba(79,142,247,0.4)}
+
+/* Tables */
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl thead{background:var(--s2);position:sticky;top:0;z-index:5}
+.tbl th{padding:10px 13px;text-align:left;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);
+  white-space:nowrap;font-family:'JetBrains Mono',monospace}
+.tbl td{padding:8px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(255,255,255,0.015)}
+.tbl tbody tr.tr-err td{background:rgba(244,63,94,0.03)}
+.tbl tbody tr.tr-warn td{background:rgba(249,115,22,0.025)}
+.td-dvr{font-weight:700;color:var(--blue2);font-size:12px}
+.td-ch{font-family:'JetBrains Mono',monospace;color:var(--text3);font-size:11px}
+.td-n{font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-dt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)}
+.pill{display:inline-flex;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.p-ok{background:rgba(34,197,94,0.1);color:var(--green)}
+.p-err{background:rgba(244,63,94,0.1);color:var(--red)}
+.p-warn{background:rgba(249,115,22,0.1);color:var(--orange)}
+.p-night{background:rgba(79,142,247,0.1);color:var(--blue2)}
+.p-ts{background:rgba(234,179,8,0.1);color:var(--yellow)}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-inp{flex:1;min-width:200px;background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Sora',sans-serif;
+  font-size:13px;outline:none;transition:border-color 0.15s}
+.search-inp:focus{border-color:rgba(79,142,247,0.45)}
+.search-inp::placeholder{color:var(--text3)}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--border);
+  background:var(--s2);color:var(--text3);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s}
+.chip.on{background:rgba(79,142,247,0.12);border-color:rgba(79,142,247,0.35);color:var(--blue2)}
+.chip:hover:not(.on){border-color:var(--border2);color:var(--text2)}
+
+/* History */
+.hist-list{display:flex;flex-direction:column;gap:9px}
+.hist-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.15s}
+.hist-card:hover{border-color:var(--border2);background:var(--s2)}
+.hist-date{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;min-width:100px}
+.hist-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.hist-stats{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hs{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.hs-ok{color:var(--green)}.hs-err{color:var(--red)}.hs-info{color:var(--blue2)}
+.hist-actions{margin-left:auto;display:flex;gap:7px;align-items:center;flex-shrink:0}
+.hist-detail{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px}
+.hist-detail-hdr{padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.hist-detail-title{font-size:13px;font-weight:700}
+
+/* Log */
+.log-panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.log-title{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);
+  font-family:'JetBrains Mono',monospace;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.log-entries{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text2);
+  max-height:340px;overflow-y:auto;line-height:1.9}
+.l-ok{color:var(--green)}.l-err{color:var(--red)}.l-info{color:var(--blue2)}
+
+/* Pages */
+.page{display:none}.page.active{display:block}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:70px 20px;color:var(--text3);text-align:center;gap:10px}
+.empty .ei{font-size:44px;opacity:0.12}
+.empty-t{font-size:18px;font-weight:700;color:var(--text2)}
+.empty-s{font-size:13px;max-width:260px;line-height:1.6}
+
+/* ══ Fullscreen Viewer ══ */
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:500;
+  display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.22s}
+.viewer.open{opacity:1;pointer-events:all}
+.viewer-top{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;
+  background:rgba(12,16,24,0.9);border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.viewer-top-l{display:flex;align-items:center;gap:12px}
+.viewer-cam-name{font-size:15px;font-weight:700}
+.viewer-dvr-txt{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.viewer-badges{display:flex;gap:7px}
+.viewer-counter{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)}
+.viewer-close{background:rgba(255,255,255,0.08);border:none;color:var(--text2);
+  cursor:pointer;width:34px;height:34px;border-radius:7px;font-size:17px;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.viewer-close:hover{background:rgba(255,255,255,0.15);color:var(--text)}
+.viewer-stage{flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;min-height:0}
+.viewer-img{max-width:calc(100% - 130px);max-height:100%;object-fit:contain;
+  border-radius:8px;transition:opacity 0.18s;box-shadow:0 0 60px rgba(0,0,0,0.8)}
+.viewer-img.fading{opacity:0}
+.viewer-noimg{display:none;flex-direction:column;align-items:center;gap:12px;color:var(--text3)}
+.viewer-noimg .ni{font-size:56px;opacity:0.18}
+.v-arrow{position:absolute;top:50%;transform:translateY(-50%);
+  width:52px;height:52px;border-radius:50%;border:2px solid rgba(255,255,255,0.13);
+  background:rgba(0,0,0,0.55);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#fff;transition:all 0.15s;z-index:10;backdrop-filter:blur(8px)}
+.v-arrow:hover{background:rgba(79,142,247,0.35);border-color:rgba(79,142,247,0.6)}
+.v-arrow:disabled{opacity:0.18;cursor:not-allowed;pointer-events:none}
+.v-arr-l{left:14px}.v-arr-r{right:14px}
+.viewer-meta{display:flex;align-items:center;justify-content:center;gap:20px;
+  padding:10px 18px;background:rgba(12,16,24,0.9);border-top:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;flex-wrap:wrap}
+.m-item{text-align:center}
+.m-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.m-val{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.viewer-thumbs{display:flex;gap:5px;align-items:center;justify-content:center;
+  padding:8px 16px;background:rgba(5,7,12,0.95);overflow-x:auto;flex-shrink:0}
+.vthumb{width:50px;height:34px;object-fit:cover;border-radius:5px;cursor:pointer;
+  opacity:0.4;border:2px solid transparent;transition:all 0.15s;flex-shrink:0}
+.vthumb.active{opacity:1;border-color:var(--blue)}
+.vthumb:hover:not(.active){opacity:0.7}
+.vthumb-ph{width:50px;height:34px;border-radius:5px;background:var(--s3);
+  display:flex;align-items:center;justify-content:center;font-size:13px;opacity:0.28;
+  cursor:pointer;flex-shrink:0;border:2px solid transparent}
+.vthumb-ph.active{border-color:var(--blue);opacity:0.65}
+.viewer-mode-label{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);
+  color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  padding:4px 12px;border-radius:20px;pointer-events:none}
+
+/* Preview modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--s1);border:1px solid var(--border2);border-radius:15px;
+  max-width:740px;width:92%;max-height:84vh;overflow:hidden;display:flex;flex-direction:column;
+  transform:scale(0.93) translateY(10px);transition:transform 0.2s}
+.modal-bg.open .modal-box{transform:scale(1) translateY(0)}
+.modal-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);background:var(--s2)}
+.modal-ttl{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-close{background:var(--s3);border:none;color:var(--text3);cursor:pointer;
+  width:27px;height:27px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all 0.15s}
+.modal-close:hover{background:var(--s4);color:var(--text)}
+.modal-body{padding:16px;overflow-y:auto}
+.snap-wrap{position:relative;background:var(--s3);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.snap-el{width:100%;display:block;border-radius:9px;max-height:360px;object-fit:contain}
+.snap-ov{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.82));padding:12px 14px;
+  display:flex;align-items:flex-end;justify-content:space-between}
+.snap-cam-l{font-size:13px;font-weight:700}
+.snap-spill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px}
+.snap-noimg{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:160px;color:var(--text3);gap:8px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.info-tile{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:10px}
+.info-tile .il{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.info-tile .iv{font-size:13px;font-weight:700}
+
+/* DVR credential popup */
+.cred-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cred-popup{background:var(--s2);border:1px solid rgba(79,142,247,0.4);border-radius:14px;
+  padding:24px 26px;min-width:360px;max-width:440px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+.cred-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.cred-title-txt{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.cred-close{background:rgba(255,255,255,0.08);border:none;color:var(--text3);
+  cursor:pointer;width:28px;height:28px;border-radius:6px;font-size:15px;
+  display:flex;align-items:center;justify-content:center}
+.cred-close:hover{background:rgba(255,255,255,0.15);color:var(--text)}
+.cred-url-box{background:var(--s3);border-radius:8px;padding:12px;margin-bottom:14px;
+  font-family:'JetBrains Mono',monospace;font-size:11px}
+.cred-url-label{color:var(--text3);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.cred-url-val{color:var(--blue2);word-break:break-all}
+.cred-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.cred-field{background:var(--s3);border-radius:8px;padding:11px}
+.cred-field-label{color:var(--text3);font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.cred-field-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cred-field-val{color:var(--text);font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cred-copy{background:none;border:none;color:var(--blue2);cursor:pointer;font-size:14px;
+  padding:2px;flex-shrink:0;transition:color 0.15s}
+.cred-copy:hover{color:var(--cyan)}
+.cred-actions{display:flex;gap:10px}
+.cred-open-btn{flex:1;background:var(--blue);color:#fff;border:none;padding:10px;
+  border-radius:8px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.cred-open-btn:hover{background:#3d7ef5;transform:translateY(-1px)}
+.cred-cancel-btn{background:var(--s3);color:var(--text3);border:1px solid var(--border);
+  padding:10px 16px;border-radius:8px;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.cred-cancel-btn:hover{background:var(--s4);color:var(--text)}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-row">
+      <div class="logo-box">📹</div>
+      <div class="logo-name">CC<em>TV</em></div>
+    </div>
+    <div class="logo-tag">Surveillance Center</div>
+  </div>
+  <nav class="nav-wrap">
+    <div class="nav-sec">Monitor</div>
+    <div class="nav-btn active" onclick="goPage('dashboard',this)"><span class="nav-icon">🏠</span>Dashboard</div>
+    <div class="nav-btn" onclick="goPage('dvrs',this)"><span class="nav-icon">📡</span>DVR / NVR</div>
+    <div class="nav-btn" onclick="goPage('allcams',this)"><span class="nav-icon">🎥</span>All Cameras</div>
+    <div class="nav-btn" onclick="goPage('issues',this)">
+      <span class="nav-icon">⚠️</span>Issues
+      <span class="nav-badge" id="issBadge" style="display:none">0</span>
+    </div>
+    <div class="nav-sec">History</div>
+    <div class="nav-btn" onclick="goPage('history',this)"><span class="nav-icon">📅</span>Scan History</div>
+    <div class="nav-btn" onclick="goPage('log',this)"><span class="nav-icon">📋</span>Activity Log</div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="foot-l">Last Scan</div>
+    <div class="foot-v" id="footScan">Never</div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="pg-title" id="pgTitle">Dashboard</div>
+      <div class="pg-sub" id="pgSub">Overview of all surveillance devices</div>
+    </div>
+    <div class="topbar-r">
+      <a href="/logout" style="display:flex;align-items:center;gap:5px;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);color:var(--red);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.15s" onmouseover="this.style.background='rgba(244,63,94,0.2)'" onmouseout="this.style.background='rgba(244,63,94,0.1)'">⏻ Logout</a>
+      <div class="chip-status"><div class="dot" id="statusDot"></div><span id="statusTxt">Idle</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="downloadExcel()">↓ Excel</button>
+      <button class="btn btn-primary" id="btnScan" onclick="startScan()">▶ Run Scan</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-head">
+        <div class="prog-dev" id="progDev">Initializing...</div>
+        <div class="prog-ct" id="progCt">0 / 0</div>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row">
+        <div class="stat-card" style="--ct:var(--blue);--cc:var(--text)">
+          <div class="stat-ico">📡</div><div class="stat-lbl">DVRs / NVRs</div>
+          <div class="stat-val" id="s-dvrs">—</div><div class="stat-sub">devices</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--blue);--cc:var(--text)" onclick="gpf('allcams','all')">
+          <div class="stat-ico">🎥</div><div class="stat-lbl">Total Cameras</div>
+          <div class="stat-val" id="s-cams">—</div><div class="stat-sub">checked</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--green);--cc:var(--green)" onclick="gpf('allcams','ok')">
+          <div class="stat-ico">✅</div><div class="stat-lbl">All OK</div>
+          <div class="stat-val" id="s-ok">—</div><div class="stat-sub">cameras clear</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--orange);--cc:var(--orange)" onclick="gpf('issues','all')">
+          <div class="stat-ico">⚠️</div><div class="stat-lbl">Issues</div>
+          <div class="stat-val" id="s-issues">—</div><div class="stat-sub">need attention</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--red);--cc:var(--red)" onclick="gpf('allcams','novid')">
+          <div class="stat-ico">📵</div><div class="stat-lbl">No Video</div>
+          <div class="stat-val" id="s-novid">—</div><div class="stat-sub">offline / dark</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--yellow);--cc:var(--yellow)" onclick="gpf('issues','blur')">
+          <div class="stat-ico">🌫</div><div class="stat-lbl">Blurry</div>
+          <div class="stat-val" id="s-blur">—</div><div class="stat-sub">need cleaning</div>
+        </div>
+        <div class="stat-card" style="--ct:var(--red);--cc:var(--red)" onclick="gpf('issues','all')">
+          <div class="stat-ico">🔴</div><div class="stat-lbl">DVR Errors</div>
+          <div class="stat-val" id="s-errs">—</div><div class="stat-sub">unreachable</div>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px">DVR / NVR Overview</div>
+      <div class="dvr-list" id="dashDvrList">
+        <div class="empty"><div class="ei">📡</div><div class="empty-t">No scan data</div><div class="empty-s">Press Run Scan to check all cameras</div></div>
+      </div>
+    </div>
+
+    <!-- DVR PAGE -->
+    <div class="page" id="page-dvrs">
+      <div class="dvr-list" id="dvrsDvrList">
+        <div class="empty"><div class="ei">📡</div><div class="empty-t">No scan data</div><div class="empty-s">Run a scan first</div></div>
+      </div>
+    </div>
+
+    <!-- ALL CAMERAS -->
+    <div class="page" id="page-allcams">
+      <div class="filter-bar">
+        <input class="search-inp" type="text" placeholder="🔍  Search camera or DVR..." id="camSearch" oninput="renderCamTable()">
+        <div class="chip on" onclick="setCF('all',this)">All</div>
+        <div class="chip" onclick="setCF('ok',this)">✅ OK</div>
+        <div class="chip" onclick="setCF('issues',this)">⚠️ Issues</div>
+        <div class="chip" onclick="setCF('night',this)">🌙 Night</div>
+        <div class="chip" onclick="setCF('novid',this)">📵 No Video</div>
+        <div class="chip" onclick="setCF('blurry',this)">🌫 Blurry</div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>DVR / NVR</th><th>Ch</th><th>Camera Name</th>
+            <th>Date</th><th>Time</th><th>View Clarity</th>
+            <th>Recording</th><th>Status</th><th>Preview</th>
+          </tr></thead>
+          <tbody id="camTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ISSUES -->
+    <div class="page" id="page-issues">
+      <div class="filter-bar">
+        <input class="search-inp" type="text" placeholder="🔍  Search issues..." id="issSearch" oninput="renderIssues()">
+        <div class="chip on" onclick="setIF('all',this)">All Issues</div>
+        <div class="chip" onclick="setIF('novid',this)">📵 No Video</div>
+        <div class="chip" onclick="setIF('blur',this)">🌫 Blurry</div>
+        <div class="chip" onclick="setIF('dark',this)">🌑 Dark</div>
+        <div class="chip" onclick="setIF('norec',this)">⏺ No Rec</div>
+      </div>
+      <div class="empty" id="issEmpty" style="display:none">
+        <div class="ei">✅</div><div class="empty-t">No issues!</div>
+        <div class="empty-s">All cameras are working perfectly</div>
+      </div>
+      <div class="tbl-wrap" id="issWrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>DVR / NVR</th><th>Ch</th><th>Camera</th>
+            <th>Date</th><th>Time</th><th>Problem</th>
+            <th>Recording</th><th>Status</th><th>📸 Preview</th>
+          </tr></thead>
+          <tbody id="issTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="page" id="page-history">
+      <div class="hist-list" id="histList">
+        <div class="empty"><div class="ei">📅</div><div class="empty-t">No history yet</div><div class="empty-s">Run a scan to start recording</div></div>
+      </div>
+      <div id="histDetailWrap"></div>
+    </div>
+
+    <!-- LOG -->
+    <div class="page" id="page-log">
+      <div class="log-panel">
+        <div class="log-title"><span class="dot live"></span>Live Activity Log</div>
+        <div class="log-entries" id="logEntries"><span style="color:var(--text3)">Waiting for scan...</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FULLSCREEN VIEWER -->
+<div class="viewer" id="viewer">
+  <div class="viewer-top">
+    <div class="viewer-top-l">
+      <div>
+        <div class="viewer-cam-name" id="vwName">Camera</div>
+        <div class="viewer-dvr-txt" id="vwDvr">DVR</div>
+      </div>
+      <div class="viewer-badges" id="vwBadges"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="viewer-counter" id="vwCounter">1 / 1</div>
+      <button class="viewer-close" onclick="closeViewer()">✕</button>
+    </div>
+  </div>
+  <div class="viewer-stage">
+    <div class="viewer-mode-label" id="vwModeLabel" style="display:none"></div>
+    <button class="v-arrow v-arr-l" id="arrL" onclick="vNav(-1)">‹</button>
+    <img class="viewer-img" id="vwImg" src="" alt="" onerror="onVwErr()">
+    <div class="viewer-noimg" id="vwNoImg"><div class="ni">📷</div><div>No snapshot available</div></div>
+    <button class="v-arrow v-arr-r" id="arrR" onclick="vNav(1)">›</button>
+  </div>
+  <div class="viewer-meta">
+    <div class="m-item"><div class="m-lbl">Clarity</div><div class="m-val" id="vwClarity">—</div></div>
+    <div class="m-item"><div class="m-lbl">Recording</div><div class="m-val" id="vwRec">—</div></div>
+    <div class="m-item"><div class="m-lbl">Date</div><div class="m-val" id="vwDate">—</div></div>
+    <div class="m-item"><div class="m-lbl">Time</div><div class="m-val" id="vwTime">—</div></div>
+    <div class="m-item"><div class="m-lbl">Status</div><div class="m-val" id="vwStatus">—</div></div>
+  </div>
+  <div class="viewer-thumbs" id="vwThumbs"></div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-bg" id="pModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-ttl"><span>📸</span><span id="pmTitle">Preview</span></div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="openViewerFromModal()">⛶ Full Screen</button>
+        <button class="modal-close" onclick="document.getElementById('pModal').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="snap-wrap">
+        <img class="snap-el" id="pmImg" src="" alt="" style="display:none"
+             onerror="this.style.display='none';document.getElementById('pmNoImg').style.display='flex'">
+        <div class="snap-ov">
+          <div class="snap-cam-l" id="pmCamLabel"></div>
+          <div class="snap-spill" id="pmStatusPill"></div>
+        </div>
+        <div class="snap-noimg" id="pmNoImg" style="display:none"><div>📷</div><div>No snapshot</div></div>
+      </div>
+      <div class="info-grid">
+        <div class="info-tile"><div class="il">DVR / NVR</div><div class="iv" id="pi-dvr">—</div></div>
+        <div class="info-tile"><div class="il">Clarity</div><div class="iv" id="pi-clarity">—</div></div>
+        <div class="info-tile"><div class="il">Recording</div><div class="iv" id="pi-rec">—</div></div>
+        <div class="info-tile"><div class="il">Date</div><div class="iv" id="pi-date">—</div></div>
+        <div class="info-tile"><div class="il">Time</div><div class="iv" id="pi-time">—</div></div>
+        <div class="info-tile"><div class="il">Status</div><div class="iv" id="pi-status">—</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── State ── */
+var results=[], camFilter='all', issFilter='all', pollId=null;
+var viewerList=[], viewerIdx=0, viewerMode='all';
+var _pmDvr=null, _pmCam=null, _pmMode='all';
+var PAGES={
+  dashboard:{t:'Dashboard',s:'Overview of all surveillance devices'},
+  dvrs:{t:'DVR / NVR Devices',s:'All connected recorders'},
+  allcams:{t:'All Cameras',s:'Every camera across all DVRs'},
+  issues:{t:'Issues',s:'Cameras needing attention'},
+  history:{t:'Scan History',s:'All past scans stored in database'},
+  log:{t:'Activity Log',s:'Real-time scan output'},
+};
+
+/* ── Navigation ── */
+function goPage(name, el) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  if(el) el.classList.add('active');
+  setText('pgTitle', PAGES[name].t);
+  setText('pgSub', PAGES[name].s);
+  if(name==='history') loadHistory();
+}
+
+/* go page + filter shortcut */
+function gpf(page, filter) {
+  if(page==='issues') { issFilter=filter; }
+  if(page==='allcams') { camFilter=filter; }
+  var navMap={dashboard:0,dvrs:1,allcams:2,issues:3,history:4,log:5};
+  var navBtns=document.querySelectorAll('.nav-btn');
+  goPage(page, navBtns[navMap[page]]);
+  if(page==='issues') { renderIssues(); syncIssChips(); }
+  if(page==='allcams') { renderCamTable(); syncCamChips(); }
+}
+
+function syncCamChips() {
+  var chips=document.querySelectorAll('#page-allcams .chip');
+  var map={all:0,ok:1,issues:2,night:3,novid:4,blurry:5};
+  chips.forEach(function(c){c.classList.remove('on');});
+  if(map[camFilter]!==undefined) chips[map[camFilter]].classList.add('on');
+}
+function syncIssChips() {
+  var chips=document.querySelectorAll('#page-issues .chip');
+  var map={all:0,novid:1,blur:2,dark:3,norec:4};
+  chips.forEach(function(c){c.classList.remove('on');});
+  if(map[issFilter]!==undefined) chips[map[issFilter]].classList.add('on');
+}
+
+/* ── Helpers ── */
+function cCls(c) {
+  if(c==='CLEAR') return 'ct-clear';
+  if(c && c.indexOf('NIGHT')>=0) return 'ct-night';
+  if(c==='NO TIMESTAMP'||c==='BLURRY') return 'ct-warn';
+  return 'ct-err';
+}
+function cPill(c) {
+  var m=(c==='CLEAR')?'p-ok':(c&&c.indexOf('NIGHT')>=0)?'p-night':(c==='NO TIMESTAMP'?'p-ts':'p-err');
+  return '<span class="pill '+m+'">'+esc(c)+'</span>';
+}
+function sPill(s,c) {
+  if(s==='OK'||c==='NIGHT VISION') return '<span class="pill p-ok">✓ OK</span>';
+  if(s.indexOf('RECORDING')>=0) return '<span class="pill p-warn">⏺ '+esc(s)+'</span>';
+  return '<span class="pill p-err">✗ '+esc(s)+'</span>';
+}
+function recStyle(r) {
+  if(r==='YES') return 'color:var(--red);font-weight:700';
+  if(r==='NO')  return 'color:var(--text3);font-weight:700';
+  return 'color:var(--orange);font-weight:700';
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setText(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function snapUrl(cam) {
+  var rel=cam.snap_rel_path||cam.snap_path||'';
+  if(!rel) return '';
+  return '/api/snapshot?rel='+encodeURIComponent(rel)+'&t='+Date.now();
+}
+
+/* ── Stats ── */
+function updateStats() {
+  var cams=results.reduce(function(a,r){return a.concat(r.cameras||[]);}, []);
+  var ok   =cams.filter(function(c){return c.status==='OK'||c.clarity==='NIGHT VISION';}).length;
+  var iss  =cams.filter(function(c){return c.status!=='OK'&&c.clarity!=='NIGHT VISION';}).length;
+  var nv   =cams.filter(function(c){return ['NO VIDEO','VERY DARK','NO SNAPSHOT','LENS BLOCKED'].indexOf(c.clarity)>=0;}).length;
+  var bl   =cams.filter(function(c){return ['BLURRY','LENS BLOCKED','OVEREXPOSED'].indexOf(c.clarity)>=0;}).length;
+  var er   =results.filter(function(r){return r.error;}).length;
+  setText('s-dvrs',results.length); setText('s-cams',cams.length);
+  setText('s-ok',ok); setText('s-issues',iss);
+  setText('s-novid',nv); setText('s-blur',bl); setText('s-errs',er);
+  var b=document.getElementById('issBadge');
+  if(iss>0){b.textContent=iss;b.style.display='';}else b.style.display='none';
+}
+
+/* ══ DVR vertical list with accordion ══ */
+function buildDvrList(containerId) {
+  var el=document.getElementById(containerId);
+  if(!results.length) {
+    el.innerHTML='<div class="empty"><div class="ei">📡</div><div class="empty-t">No scan data</div><div class="empty-s">Press Run Scan</div></div>';
+    return;
+  }
+  var html='';
+  for(var ri=0;ri<results.length;ri++) {
+    var res=results[ri];
+    var err=res.error;
+    var cams=res.cameras||[];
+    var cls=err?'c-err':(res.issues>0?'c-warn':'c-ok');
+    var ind=err?'err':(res.issues>0?'warn':'ok');
+    /* IP link — opens credential popup */
+    var _url='http://'+String(res.raw_ip||res.ip)+':'+String(res.raw_port||80);
+    var _u=res.user||''; var _p=res.pwd||'';
+    var ipHtml='<span class="ip-link-wrap">'+
+      '<a href="'+_url+'" target="_blank" rel="noopener" class="ip-link" '+
+      'onclick="event.preventDefault();showCred(event,'+
+      JSON.stringify(res.ip||'')+','+
+      JSON.stringify(res.raw_ip||'')+','+
+      JSON.stringify(String(res.raw_port||80))+','+
+      JSON.stringify(res.user||'')+','+
+      JSON.stringify(res.pwd||'')+
+      ')">🔗 '+esc(res.ip)+'</a></span>';
+    var badgeHtml='<span class="badge b-info">'+cams.length+' cams</span> ';
+    badgeHtml+=err?'<span class="badge b-err">ERROR</span>':(res.issues>0?'<span class="badge b-warn">'+res.issues+' issues</span>':'<span class="badge b-ok">All OK</span>');
+    var timeHtml='<span class="dvr-time-mono" style="margin-left:4px">'+esc(res.nvr_time||'')+'</span>';
+    /* Camera rows */
+    var camRows='';
+    for(var ci=0;ci<cams.length;ci++) {
+      var cam=cams[ci];
+      var ok2=cam.status==='OK'||cam.clarity==='NIGHT VISION';
+      var short=cam.clarity.replace('NIGHT VISION','NIGHT').replace('NO TIMESTAMP','NO TS').substring(0,12);
+      var rc=cam.recording==='YES'?'r-yes':(cam.recording==='NO'?'r-no':'r-unk');
+      camRows+='<tr class="'+(ok2?'':'issue')+'">';
+      camRows+='<td class="cam-num">'+cam.ch+'</td>';
+      camRows+='<td class="cam-n" title="'+esc(cam.name)+'">'+esc(cam.name)+'</td>';
+      camRows+='<td><span class="ct-tag '+cCls(cam.clarity)+'">'+esc(short)+'</span></td>';
+      camRows+='<td><span class="rec-d '+rc+'"></span></td>';
+      camRows+='<td>'+sPill(cam.status,cam.clarity)+'</td>';
+      camRows+='<td><button class="prev-btn" onclick="openPreview(\''+esc(res.name)+'\','+ri+','+ci+',\'all\')">👁 View</button></td>';
+      camRows+='</tr>';
+    }
+    var panelContent='';
+    if(err) {
+      panelContent='<div style="padding:16px;color:var(--red);font-family:\'JetBrains Mono\',monospace;font-size:12px">⚠ '+esc(err)+'</div>';
+    } else {
+      panelContent='<div class="dvr-time-strip">🕐 <span>'+esc(res.nvr_time||'N/A')+'</span> &nbsp;|&nbsp; Date: <span style="color:'+(res.time_ok?'var(--green)':'var(--red)')+'">'+( res.time_ok?'✓ OK':'✗ WRONG')+'</span></div>';
+      panelContent+='<table class="dvr-cam-table"><thead><tr><th>Ch</th><th>Camera Name</th><th>Clarity</th><th>Rec</th><th>Status</th><th>Preview</th></tr></thead><tbody>'+camRows+'</tbody></table>';
+    }
+    html+='<div class="dvr-item '+cls+'">';
+    html+='<div class="dvr-item-head" onclick="toggleDvr('+ri+',\''+containerId+'\')">';
+    html+='<div class="dind '+ind+'"></div>';
+    html+='<div class="dvr-info"><div class="dvr-nm">'+esc(res.name)+'</div>';
+    html+='<div class="dvr-ip-wrap">'+ipHtml+'</div></div>';
+    html+='<div class="dvr-item-right">'+badgeHtml+timeHtml+'<span class="chevron" id="chev-'+containerId+'-'+ri+'">›</span></div>';
+    html+='</div>';
+    html+='<div class="dvr-cam-panel" id="panel-'+containerId+'-'+ri+'">'+panelContent+'</div>';
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+
+function toggleDvr(ri, cid) {
+  var p=document.getElementById('panel-'+cid+'-'+ri);
+  var c=document.getElementById('chev-'+cid+'-'+ri);
+  if(!p||!c) return;
+  var open=p.classList.contains('open');
+  p.classList.toggle('open',!open);
+  c.classList.toggle('open',!open);
+}
+function renderDvrLists() {
+  buildDvrList('dashDvrList');
+  buildDvrList('dvrsDvrList');
+}
+
+/* ══ DVR Credential Popup ══ */
+function showCred(evt, ipPort, rawIp, rawPort, user, pwd) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  var port=String(rawPort||'80');
+  var url='http://'+rawIp+':'+port;
+  /* Remove existing */
+  var existing=document.getElementById('credOverlay');
+  if(existing) existing.remove();
+  var overlay=document.createElement('div');
+  overlay.id='credOverlay';
+  overlay.className='cred-overlay';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var popup=document.createElement('div');
+  popup.className='cred-popup';
+  /* Build inner HTML safely using DOM */
+  var titleDiv=document.createElement('div'); titleDiv.className='cred-title';
+  var titleTxt=document.createElement('div'); titleTxt.className='cred-title-txt';
+  titleTxt.innerHTML='🔐 DVR Login';
+  var closeBtn=document.createElement('button'); closeBtn.className='cred-close';
+  closeBtn.textContent='✕'; closeBtn.onclick=function(){overlay.remove();};
+  titleDiv.appendChild(titleTxt); titleDiv.appendChild(closeBtn);
+  /* URL box */
+  var urlBox=document.createElement('div'); urlBox.className='cred-url-box';
+  var urlLbl=document.createElement('div'); urlLbl.className='cred-url-label'; urlLbl.textContent='URL';
+  var urlVal=document.createElement('div'); urlVal.className='cred-url-val'; urlVal.textContent=url;
+  urlBox.appendChild(urlLbl); urlBox.appendChild(urlVal);
+  /* Fields */
+  var fields=document.createElement('div'); fields.className='cred-fields';
+  function makeField(label, value) {
+    var f=document.createElement('div'); f.className='cred-field';
+    var l=document.createElement('div'); l.className='cred-field-label'; l.textContent=label;
+    var row=document.createElement('div'); row.className='cred-field-row';
+    var v=document.createElement('div'); v.className='cred-field-val'; v.textContent=value||'—';
+    var cp=document.createElement('button'); cp.className='cred-copy'; cp.textContent='📋';
+    cp.title='Copy '+label;
+    cp.onclick=function(){
+      navigator.clipboard.writeText(value||'').then(function(){
+        cp.textContent='✓';
+        setTimeout(function(){cp.textContent='📋';},1200);
+      }).catch(function(){
+        /* Fallback for older browsers */
+        var ta=document.createElement('textarea');
+        ta.value=value||''; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        cp.textContent='✓'; setTimeout(function(){cp.textContent='📋';},1200);
+      });
+    };
+    row.appendChild(v); row.appendChild(cp);
+    f.appendChild(l); f.appendChild(row);
+    return f;
+  }
+  fields.appendChild(makeField('Username', user));
+  fields.appendChild(makeField('Password', pwd));
+  /* Actions */
+  var actions=document.createElement('div'); actions.className='cred-actions';
+  /* Use <a> tag instead of button to avoid popup blocker */
+  var openBtn=document.createElement('a');
+  openBtn.className='cred-open-btn';
+  openBtn.innerHTML='🌐 Open DVR in New Tab';
+  openBtn.href=url;
+  openBtn.target='_blank';
+  openBtn.rel='noopener';
+  openBtn.style.display='block';
+  openBtn.style.textDecoration='none';
+  openBtn.style.textAlign='center';
+  openBtn.addEventListener('click',function(){
+    overlay.remove();
+    showFloatingCred(url, user, pwd);
+  });
+  var cancelBtn=document.createElement('button'); cancelBtn.className='cred-cancel-btn';
+  cancelBtn.textContent='Cancel'; cancelBtn.onclick=function(){overlay.remove();};
+  actions.appendChild(openBtn); actions.appendChild(cancelBtn);
+  /* Assemble */
+  popup.appendChild(titleDiv); popup.appendChild(urlBox);
+  popup.appendChild(fields); popup.appendChild(actions);
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
+}
+
+/* ══ Camera tables ══ */
+function camRowHtml(res, cam, mode) {
+  var ok=cam.status==='OK'||cam.clarity==='NIGHT VISION';
+  var tr=ok?'':(cam.status.indexOf('RECORDING')>=0?'tr-warn':'tr-err');
+  var ri=results.indexOf(res);
+  var ci=res.cameras.indexOf(cam);
+  var r='<tr class="'+tr+'">';
+  r+='<td class="td-dvr">'+esc(res.name)+'</td>';
+  r+='<td class="td-ch">'+cam.ch+'</td>';
+  r+='<td class="td-n" title="'+esc(cam.name)+'">'+esc(cam.name)+'</td>';
+  r+='<td class="td-dt">'+esc(cam.date)+'</td>';
+  r+='<td class="td-dt">'+esc(cam.time)+'</td>';
+  r+=mode==='issues'?('<td>'+cPill(cam.clarity)+'</td>'):('<td>'+cPill(cam.clarity)+'</td>');
+  r+='<td><span style="'+recStyle(cam.recording)+';font-family:\'JetBrains Mono\',monospace;font-size:12px">'+cam.recording+'</span></td>';
+  r+='<td>'+sPill(cam.status,cam.clarity)+'</td>';
+  r+='<td><button class="prev-btn" onclick="openPreview(\''+esc(res.name)+'\','+ri+','+ci+',\''+mode+'\')">👁 View</button></td>';
+  r+='</tr>';
+  return r;
+}
+function isNoVid(c){return ['NO VIDEO','VERY DARK','NO SNAPSHOT','LENS BLOCKED'].indexOf(c)>=0;}
+function renderCamTable() {
+  var q=document.getElementById('camSearch').value.toLowerCase();
+  var rows='';
+  for(var ri=0;ri<results.length;ri++) {
+    var res=results[ri];
+    var cams=res.cameras||[];
+    for(var ci=0;ci<cams.length;ci++) {
+      var cam=cams[ci];
+      if(q&&cam.name.toLowerCase().indexOf(q)<0&&res.name.toLowerCase().indexOf(q)<0) continue;
+      if(camFilter==='ok'&&!(cam.status==='OK')) continue;
+      if(camFilter==='issues'&&(cam.status==='OK'||cam.clarity==='NIGHT VISION')) continue;
+      if(camFilter==='night'&&cam.clarity.indexOf('NIGHT')<0) continue;
+      if(camFilter==='novid'&&!isNoVid(cam.clarity)) continue;
+      if(camFilter==='blurry'&&['BLURRY','LENS BLOCKED'].indexOf(cam.clarity)<0) continue;
+      rows+=camRowHtml(res,cam,'allcams');
+    }
+  }
+  document.getElementById('camTbody').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No cameras match filter</td></tr>';
+}
+function renderIssues() {
+  var q=document.getElementById('issSearch').value.toLowerCase();
+  var rows='';
+  for(var ri=0;ri<results.length;ri++) {
+    var res=results[ri];
+    var cams=res.cameras||[];
+    for(var ci=0;ci<cams.length;ci++) {
+      var cam=cams[ci];
+      if(cam.status==='OK'||cam.clarity==='NIGHT VISION') continue;
+      if(q&&cam.name.toLowerCase().indexOf(q)<0&&res.name.toLowerCase().indexOf(q)<0) continue;
+      if(issFilter==='novid'&&!isNoVid(cam.clarity)) continue;
+      if(issFilter==='blur'&&['BLURRY','LENS BLOCKED'].indexOf(cam.clarity)<0) continue;
+      if(issFilter==='dark'&&['VERY DARK','OVEREXPOSED'].indexOf(cam.clarity)<0) continue;
+      if(issFilter==='norec'&&cam.recording!=='NO') continue;
+      rows+=camRowHtml(res,cam,'issues');
+    }
+  }
+  document.getElementById('issTbody').innerHTML=rows;
+  document.getElementById('issEmpty').style.display=rows?'none':'flex';
+  document.getElementById('issWrap').style.display=rows?'block':'none';
+}
+function setCF(f,el){
+  camFilter=f;
+  if(el){document.querySelectorAll('#page-allcams .chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');}
+  renderCamTable();
+}
+function setIF(f,el){
+  issFilter=f;
+  if(el){document.querySelectorAll('#page-issues .chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');}
+  renderIssues();
+}
+
+/* ══ Preview Modal ══ */
+function openPreview(dvrName, ri, ci, mode) {
+  var res=results[ri]; if(!res) return;
+  var cam=res.cameras[ci]; if(!cam) return;
+  _pmDvr=dvrName; _pmCam=cam; _pmMode=mode||'all';
+  setText('pmTitle','Ch'+cam.ch+' — '+cam.name);
+  document.getElementById('pmCamLabel').textContent=cam.name;
+  setText('pi-dvr',dvrName); setText('pi-clarity',cam.clarity);
+  setText('pi-rec',cam.recording); setText('pi-date',cam.date);
+  setText('pi-time',cam.time); setText('pi-status',cam.status);
+  var ok=cam.status==='OK'||cam.clarity==='NIGHT VISION';
+  var pill=document.getElementById('pmStatusPill');
+  pill.textContent=cam.status;
+  pill.style.background=ok?'rgba(34,197,94,0.2)':'rgba(244,63,94,0.2)';
+  pill.style.color=ok?'var(--green)':'var(--red)';
+  var img=document.getElementById('pmImg'); var ni=document.getElementById('pmNoImg');
+  img.style.display='none'; ni.style.display='none';
+  var su=snapUrl(cam);
+  if(su){img.src=su;img.style.display='block';}else ni.style.display='flex';
+  document.getElementById('pModal').classList.add('open');
+}
+function openViewerFromModal(){
+  document.getElementById('pModal').classList.remove('open');
+  if(_pmCam) openViewer(_pmDvr,_pmCam,_pmMode);
+}
+
+/* ══ Viewer ══ */
+function openViewer(dvrName, cam, mode) {
+  mode=mode||'all';
+  viewerMode=mode;
+  var res=results.find(function(r){return r.name===dvrName;});
+  if(!res) return;
+
+  if(mode==='issues') {
+    /* Issues page — show only cameras matching current issues filter */
+    var q=document.getElementById('issSearch').value.toLowerCase();
+    viewerList=[];
+    for(var ri=0;ri<results.length;ri++){
+      var r2=results[ri]; var cams2=r2.cameras||[];
+      for(var ci2=0;ci2<cams2.length;ci2++){
+        var c2=cams2[ci2];
+        if(c2.status==='OK'||c2.clarity==='NIGHT VISION') continue;
+        if(q&&c2.name.toLowerCase().indexOf(q)<0&&r2.name.toLowerCase().indexOf(q)<0) continue;
+        if(issFilter==='novid'&&!isNoVid(c2.clarity)) continue;
+        if(issFilter==='blur'&&['BLURRY','LENS BLOCKED'].indexOf(c2.clarity)<0) continue;
+        if(issFilter==='dark'&&['VERY DARK','OVEREXPOSED'].indexOf(c2.clarity)<0) continue;
+        if(issFilter==='norec'&&c2.recording!=='NO') continue;
+        viewerList.push(Object.assign({},c2,{_dvrName:r2.name}));
+      }
+    }
+  } else if(mode==='allcams') {
+    /* All Cameras page — show cameras matching current camFilter */
+    var q2=(document.getElementById('camSearch')||{}).value||'';
+    q2=q2.toLowerCase();
+    viewerList=[];
+    for(var ri3=0;ri3<results.length;ri3++){
+      var r3=results[ri3]; var cams3=r3.cameras||[];
+      for(var ci3=0;ci3<cams3.length;ci3++){
+        var c3=cams3[ci3];
+        if(q2&&c3.name.toLowerCase().indexOf(q2)<0&&r3.name.toLowerCase().indexOf(q2)<0) continue;
+        if(camFilter==='ok'&&!(c3.status==='OK')) continue;
+        if(camFilter==='issues'&&(c3.status==='OK'||c3.clarity==='NIGHT VISION')) continue;
+        if(camFilter==='night'&&c3.clarity.indexOf('NIGHT')<0) continue;
+        if(camFilter==='novid'&&!isNoVid(c3.clarity)) continue;
+        if(camFilter==='blurry'&&['BLURRY','LENS BLOCKED'].indexOf(c3.clarity)<0) continue;
+        viewerList.push(Object.assign({},c3,{_dvrName:r3.name}));
+      }
+    }
+  } else {
+    /* Default — all cameras of this DVR */
+    viewerList=(res.cameras||[]).map(function(c){return Object.assign({},c,{_dvrName:dvrName});});
+  }
+
+  viewerIdx=viewerList.findIndex(function(c){return c.ch===cam.ch&&c._dvrName===dvrName;});
+  if(viewerIdx<0) viewerIdx=0;
+  document.getElementById('viewer').classList.add('open');
+  document.body.style.overflow='hidden';
+
+  var lbl=document.getElementById('vwModeLabel');
+  if(mode==='issues'){
+    lbl.textContent='⚠ '+viewerList.length+' issue camera'+(viewerList.length===1?'':'s')+' — filter: '+(issFilter==='all'?'All Issues':issFilter);
+    lbl.style.display='block';
+  } else if(mode==='allcams' && camFilter!=='all'){
+    lbl.textContent='🎯 '+viewerList.length+' cameras — filter: '+camFilter;
+    lbl.style.display='block';
+  } else {
+    lbl.style.display='none';
+  }
+  buildThumbs();
+  showViewerFrame();
+}
+function closeViewer(){
+  document.getElementById('viewer').classList.remove('open');
+  document.body.style.overflow='';
+}
+function vNav(dir){
+  var ni=viewerIdx+dir;
+  if(ni<0||ni>=viewerList.length) return;
+  viewerIdx=ni;
+  var img=document.getElementById('vwImg');
+  img.classList.add('fading');
+  setTimeout(function(){showViewerFrame();img.classList.remove('fading');},170);
+}
+function showViewerFrame(){
+  var cam=viewerList[viewerIdx];
+  if(!cam) return;
+  setText('vwName','Ch'+cam.ch+' — '+cam.name);
+  setText('vwDvr', cam._dvrName||'');
+  setText('vwClarity',cam.clarity); setText('vwRec',cam.recording);
+  setText('vwDate',cam.date||cam.cam_date||'');
+  setText('vwTime',cam.time||cam.cam_time||'');
+  setText('vwStatus',cam.status);
+  setText('vwCounter',(viewerIdx+1)+' / '+viewerList.length);
+  var ok=cam.status==='OK'||cam.clarity==='NIGHT VISION';
+  document.getElementById('vwBadges').innerHTML='<span class="badge '+(ok?'b-ok':'b-err')+'">'+esc(cam.status)+'</span>';
+  var img=document.getElementById('vwImg'); var noimg=document.getElementById('vwNoImg');
+  img.style.display='none'; noimg.style.display='none';
+  var su=snapUrl(cam);
+  if(su){img.src=su;img.style.display='block';}else{noimg.style.display='flex';}
+  document.getElementById('arrL').disabled=(viewerIdx===0);
+  document.getElementById('arrR').disabled=(viewerIdx===viewerList.length-1);
+  updateThumbHL();
+}
+function onVwErr(){
+  document.getElementById('vwImg').style.display='none';
+  document.getElementById('vwNoImg').style.display='flex';
+}
+function buildThumbs(){
+  var strip=document.getElementById('vwThumbs'); var html='';
+  for(var i=0;i<viewerList.length;i++){
+    var cam=viewerList[i];
+    var su=snapUrl(cam);
+    if(su){
+      html+='<img class="vthumb'+(i===viewerIdx?' active':'')+'" id="vt-'+i+'" '+
+        'src="'+su+'" onclick="jumpViewer('+i+')" title="Ch'+cam.ch+': '+esc(cam.name)+'" alt="">';
+    } else {
+      html+='<div class="vthumb-ph'+(i===viewerIdx?' active':'')+'" id="vt-'+i+'" onclick="jumpViewer('+i+')">📷</div>';
+    }
+  }
+  strip.innerHTML=html;
+}
+function updateThumbHL(){
+  document.querySelectorAll('#vwThumbs .vthumb, #vwThumbs .vthumb-ph').forEach(function(el,i){
+    el.classList.toggle('active',i===viewerIdx);
+  });
+  var th=document.getElementById('vt-'+viewerIdx);
+  if(th) th.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+function jumpViewer(idx){
+  viewerIdx=idx;
+  var img=document.getElementById('vwImg');
+  img.classList.add('fading');
+  setTimeout(function(){showViewerFrame();img.classList.remove('fading');},170);
+}
+document.addEventListener('keydown',function(e){
+  if(!document.getElementById('viewer').classList.contains('open')) return;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') vNav(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') vNav(-1);
+  if(e.key==='Escape') closeViewer();
+});
+
+/* ══ History ══ */
+function loadHistory(){
+  fetch('/api/history').then(function(r){return r.json();}).then(function(data){
+    var el=document.getElementById('histList');
+    if(!data.length){
+      el.innerHTML='<div class="empty"><div class="ei">📅</div><div class="empty-t">No history yet</div><div class="empty-s">Run a scan to start recording</div></div>';
+      return;
+    }
+    var html='';
+    for(var i=0;i<data.length;i++){
+      var h=data[i];
+      html+='<div class="hist-card" onclick="loadHistDetail('+h.id+')">';
+      html+='<div><div class="hist-date">'+esc(h.scan_date)+'</div><div class="hist-time">'+esc(h.scan_time)+'</div></div>';
+      html+='<div class="hist-stats">';
+      html+='<span class="hs hs-info">📡 '+h.total_dvrs+' DVRs</span>';
+      html+='<span class="hs hs-info">🎥 '+h.total_cams+' cams</span>';
+      html+='<span class="hs hs-ok">✅ '+h.ok_count+' OK</span>';
+      if(h.issue_count>0) html+='<span class="hs hs-err">⚠️ '+h.issue_count+' issues</span>';
+      html+='</div>';
+      html+='<div class="hist-actions">';
+      html+='<button class="btn btn-green btn-sm" onclick="dlHistExcel('+h.id+',event)">↓ Excel</button>';
+      html+='<span style="color:var(--text3);font-size:16px">›</span>';
+      html+='</div></div>';
+    }
+    el.innerHTML=html;
+  }).catch(function(){});
+}
+function loadHistDetail(sid){
+  var wrap=document.getElementById('histDetailWrap');
+  if(wrap.dataset.sid==sid){wrap.innerHTML='';wrap.dataset.sid='';return;}
+  wrap.dataset.sid=sid;
+  wrap.innerHTML='<div style="padding:16px;color:var(--text3);font-family:\'JetBrains Mono\',monospace;font-size:12px">Loading...</div>';
+  fetch('/api/history/'+sid).then(function(r){return r.json();}).then(function(data){
+    var scan=data.scan||{}; var dvrs=data.dvrs||[]; var cams=data.cameras||[];
+    var issues=cams.filter(function(c){return c.status!=='OK';});
+    var dvrRows='';
+    for(var i=0;i<dvrs.length;i++){
+      var d=dvrs[i];
+      dvrRows+='<tr class="'+(d.error?'tr-err':'')+'">';
+      dvrRows+='<td class="td-dvr">'+esc(d.dvr_name)+'</td>';
+      dvrRows+='<td class="td-dt">'+esc(d.ip_port||'')+'</td>';
+      dvrRows+='<td class="td-dt">'+esc(d.nvr_time||'—')+'</td>';
+      dvrRows+='<td><span class="pill '+(d.time_ok?'p-ok':'p-err')+'">'+(d.time_ok?'OK':'WRONG')+'</span></td>';
+      dvrRows+='<td class="td-ch">'+d.total_cams+'</td>';
+      dvrRows+='<td class="td-ch" style="color:var(--green)">'+d.ok_count+'</td>';
+      dvrRows+='<td class="td-ch" style="color:'+(d.issue_count>0?'var(--red)':'inherit')+'">'+d.issue_count+'</td>';
+      dvrRows+='<td style="color:var(--red);font-size:11px">'+esc(d.error||'')+'</td></tr>';
+    }
+    var issRows='';
+    for(var j=0;j<issues.length;j++){
+      var c=issues[j];
+      var srel=c.snap_rel_path||c.snap_path||'';
+      issRows+='<tr class="tr-err">';
+      issRows+='<td class="td-dvr">'+esc(c.dvr_name)+'</td>';
+      issRows+='<td class="td-ch">'+c.channel+'</td>';
+      issRows+='<td class="td-n">'+esc(c.cam_name)+'</td>';
+      issRows+='<td class="td-dt">'+esc(c.cam_date||'—')+'</td>';
+      issRows+='<td class="td-dt">'+esc(c.cam_time||'—')+'</td>';
+      issRows+=cPill ? ('<td>'+cPill(c.clarity)+'</td>') : '<td>'+esc(c.clarity)+'</td>';
+      issRows+='<td><span style="'+recStyle(c.recording||'?')+';font-family:\'JetBrains Mono\',monospace;font-size:12px">'+esc(c.recording||'?')+'</span></td>';
+      issRows+=sPill ? ('<td>'+sPill(c.status,c.clarity)+'</td>') : '<td>'+esc(c.status)+'</td>';
+      issRows+='<td>'+(srel?'<button class="prev-btn" onclick="window.open(\'/api/snapshot?rel=\'+encodeURIComponent(\''+esc(srel)+'\'),\'_blank\')">👁 View</button>':'—')+'</td>';
+      issRows+='</tr>';
+    }
+    var html='<div class="hist-detail">';
+    html+='<div class="hist-detail-hdr"><div class="hist-detail-title">📊 Scan #'+sid+' — '+esc(scan.scan_date||'')+' '+esc(scan.scan_time||'')+'</div>';
+    html+='<button class="btn btn-green btn-sm" onclick="dlHistExcel('+sid+',event)">↓ Export Excel</button></div>';
+    html+='<div style="padding:14px">';
+    html+='<div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px">DVR Summary</div>';
+    html+='<div class="tbl-wrap" style="margin-bottom:16px"><table class="tbl"><thead><tr><th>DVR/NVR</th><th>IP</th><th>DVR Time</th><th>Date</th><th>Total</th><th>OK</th><th>Issues</th><th>Error</th></tr></thead><tbody>'+dvrRows+'</tbody></table></div>';
+    if(issRows){
+      html+='<div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px">Issues Found ('+issues.length+')</div>';
+      html+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>DVR</th><th>Ch</th><th>Camera</th><th>Date</th><th>Time</th><th>Clarity</th><th>Rec</th><th>Status</th><th>Preview</th></tr></thead><tbody>'+issRows+'</tbody></table></div>';
+    } else {
+      html+='<div style="color:var(--green);font-size:13px;padding:10px 0">✅ No issues found in this scan</div>';
+    }
+    html+='</div></div>';
+    wrap.innerHTML=html;
+  }).catch(function(){wrap.innerHTML='<div style="padding:16px;color:var(--red);font-size:12px">Error loading detail</div>';});
+}
+function dlHistExcel(sid,evt){if(evt)evt.stopPropagation();window.location.href='/api/history/'+sid+'/excel';}
+
+/* ══ Scan ══ */
+function startScan(){
+  var btn=document.getElementById('btnScan');
+  btn.disabled=true; btn.textContent='⏳ Scanning...';
+  document.getElementById('progWrap').style.display='block';
+  document.getElementById('statusDot').className='dot scan';
+  setText('statusTxt','Scanning');
+  fetch('/api/start_scan',{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+    if(d.error){alert(d.error);btn.disabled=false;btn.textContent='▶ Run Scan';return;}
+    if(pollId) clearInterval(pollId);
+    pollId=setInterval(poll,1200);
+  }).catch(function(e){
+    console.error('Start scan error:',e);
+    btn.disabled=false; btn.textContent='▶ Run Scan';
+    alert('Cannot connect to server. Make sure the dashboard is running.');
+  });
+}
+function poll(){
+  Promise.all([
+    fetch('/api/scan_status').then(function(r){return r.json();}),
+    fetch('/api/results').then(function(r){return r.json();})
+  ]).then(function(vals){
+    var st=vals[0]; var res=vals[1];
+    var pct=st.total?Math.round(st.progress/st.total*100):0;
+    document.getElementById('progFill').style.width=pct+'%';
+    setText('progDev',st.running?('Checking: '+st.current):('✓ Complete — '+st.total+' devices'));
+    setText('progCt',st.progress+' / '+st.total);
+    if(st.log&&st.log.length){
+      var logHtml='';
+      for(var i=0;i<st.log.length;i++){
+        var l=st.log[i];
+        var cls=l.indexOf('✓')>=0?'l-ok':(l.indexOf('✗')>=0?'l-err':'');
+        logHtml+='<div class="'+cls+'">'+esc(l)+'</div>';
+      }
+      document.getElementById('logEntries').innerHTML=logHtml;
+    }
+    results=res;
+    if(results.length){updateStats();renderDvrLists();renderCamTable();renderIssues();}
+    if(!st.running&&st.last_scan){
+      clearInterval(pollId); pollId=null;
+      document.getElementById('btnScan').disabled=false;
+      document.getElementById('btnScan').textContent='▶ Run Scan';
+      document.getElementById('statusDot').className='dot live';
+      setText('statusTxt','Live');
+      setText('footScan',st.last_scan);
+    }
+  }).catch(function(e){console.error('Poll error:',e);});
+}
+function downloadExcel(){window.location.href='/api/download_excel';}
+
+/* ══ Floating credential card ══ */
+function showFloatingCred(url,user,pwd){
+  var old=document.getElementById('floatCred'); if(old) old.remove();
+  var el=document.createElement('div'); el.id='floatCred';
+  el.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:#0c1018;'+
+    'border:1px solid rgba(79,142,247,0.4);border-radius:12px;padding:16px 20px;'+
+    'box-shadow:0 12px 40px rgba(0,0,0,0.6);font-family:\'JetBrains Mono\',monospace;'+
+    'min-width:280px;animation:slideInRight 0.3s ease';
+  el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<div style="font-size:12px;font-weight:700;color:#eef2ff">🔐 DVR Credentials</div>'+
+    '<button onclick="document.getElementById(\'floatCred\').remove()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:14px;padding:0">✕</button>'+
+    '</div><div style="font-size:10px;color:#475569;margin-bottom:4px;letter-spacing:1.5px;text-transform:uppercase">URL</div>'+
+    '<div style="font-size:11px;color:#7eb3ff;margin-bottom:12px;word-break:break-all">'+esc(url)+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+    fcField('Username',user)+fcField('Password',pwd)+
+    '</div><div style="font-size:10px;color:#475569;text-align:center">Copy and paste into DVR login page</div>';
+  document.body.appendChild(el);
+  setTimeout(function(){var e=document.getElementById('floatCred');if(e)e.remove();},30000);
+}
+function fcField(label,val){
+  var id='fc_'+Math.random().toString(36).slice(2);
+  return '<div style="background:#131a24;border-radius:7px;padding:9px 10px">'+
+    '<div style="font-size:9px;color:#475569;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">'+label+'</div>'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">'+
+    '<span style="color:#eef2ff;font-size:12px;font-weight:700">'+esc(val||'—')+'</span>'+
+    '<button onclick="cpTxt(\''+val.replace(/'/g,"\\'")+'\')" '+
+    'style="background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);color:#7eb3ff;'+
+    'cursor:pointer;font-size:11px;padding:2px 7px;border-radius:5px">📋</button>'+
+    '</div></div>';
+}
+function cpTxt(val){
+  navigator.clipboard.writeText(val).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=val;
+    ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+/* Init — resume scan polling if scan was running when page was opened/refreshed */
+(function checkScanOnLoad(){
+  fetch('/api/scan_status').then(function(r){return r.json();}).then(function(st){
+    if(st.running){
+      /* Scan is in progress — show progress bar and resume polling */
+      document.getElementById('progWrap').style.display='block';
+      document.getElementById('statusDot').className='dot scan';
+      setText('statusTxt','Scanning');
+      var btn=document.getElementById('btnScan');
+      btn.disabled=true; btn.textContent='⏳ Scanning...';
+      pollId=setInterval(poll,1200);
+    } else if(st.last_scan){
+      document.getElementById('statusDot').className='dot live';
+      setText('statusTxt','Live');
+      setText('footScan',st.last_scan);
+    }
+  }).catch(function(){});
+})();
+
+fetch('/api/config').then(function(r){return r.json();}).then(function(d){
+  setText('s-dvrs',d.filter(function(x){return x.enabled!==false;}).length);
+}).catch(function(){});
+</script>
+</body>
+</html>

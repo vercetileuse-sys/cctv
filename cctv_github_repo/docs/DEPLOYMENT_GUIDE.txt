@@ -1,0 +1,171 @@
+╔══════════════════════════════════════════════════════════════════╗
+║          CCTV Dashboard — Production Deployment Guide           ║
+║                  Always-Running on Windows Server                ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Login Credentials:
+  Username : Admin
+  Password : Auracctv#2024
+
+
+METHOD 1 — PM2 (Recommended — like Node.js deployment, never stops)
+═══════════════════════════════════════════════════════════════════
+
+This is the best method. PM2 keeps your Python app running 24/7,
+auto-restarts if it crashes, and starts automatically on Windows reboot.
+
+STEP 1 — Install Node.js (required for PM2)
+  Download: https://nodejs.org  (click "LTS" version)
+  Install with all defaults. Tick "Add to PATH".
+  Restart your computer after installing.
+
+STEP 2 — Install PM2 globally
+  Open Command Prompt as Administrator and run:
+    npm install -g pm2
+    npm install -g pm2-windows-startup
+
+STEP 3 — Install Python requirements
+  cd C:\cctv_dashboard
+  pip install flask requests openpyxl urllib3 pillow opencv-python
+
+STEP 4 — Start the app with PM2
+  cd C:\cctv_dashboard
+  pm2 start app.py --name "cctv-dashboard" --interpreter python
+
+STEP 5 — Make PM2 start on Windows boot
+  pm2 save
+  pm2-startup install
+
+STEP 6 — Verify it's running
+  pm2 list
+  pm2 logs cctv-dashboard
+
+  Open browser: http://localhost:5000
+  Login: Admin / Auracctv#2024
+
+STEP 7 — Access from any PC on the network
+  Find this computer's IP address:
+    Open Command Prompt → type: ipconfig
+    Look for "IPv4 Address" e.g. 192.168.1.100
+
+  From any other PC on the network open:
+    http://192.168.1.100:5000
+
+
+USEFUL PM2 COMMANDS
+═══════════════════
+  pm2 list                        — show all running apps
+  pm2 restart cctv-dashboard      — restart the app
+  pm2 stop cctv-dashboard         — stop the app
+  pm2 start cctv-dashboard        — start the app
+  pm2 logs cctv-dashboard         — show live logs
+  pm2 logs cctv-dashboard --lines 50  — show last 50 log lines
+  pm2 monit                       — real-time dashboard
+
+
+METHOD 2 — Windows Service with NSSM (Alternative)
+════════════════════════════════════════════════════
+
+STEP 1 — Download NSSM
+  Go to: https://nssm.cc/download
+  Download nssm.exe and put it in C:\Windows\System32\
+
+STEP 2 — Install as a Windows Service
+  Open Command Prompt as Administrator:
+    nssm install CCTV-Dashboard
+  
+  In the NSSM dialog that opens:
+    Path: C:\Users\Admin\AppData\Local\Programs\Python\Python311\python.exe
+    Startup directory: C:\cctv_dashboard
+    Arguments: app.py
+  
+  Click "Install service"
+
+STEP 3 — Start the service
+  nssm start CCTV-Dashboard
+  
+  Or open Windows Services (services.msc) and start "CCTV-Dashboard"
+
+
+METHOD 3 — Simple Windows Task Scheduler (Basic)
+═════════════════════════════════════════════════
+
+STEP 1 — Open Task Scheduler
+  Search "Task Scheduler" in Start menu
+
+STEP 2 — Create Basic Task
+  Name: CCTV Dashboard
+  Trigger: At startup
+  Action: Start a program
+    Program: python
+    Arguments: C:\cctv_dashboard\app.py
+    Start in: C:\cctv_dashboard
+
+STEP 3 — In "General" tab:
+  Tick "Run whether user is logged on or not"
+  Tick "Run with highest privileges"
+
+
+FOLDER STRUCTURE (copy these files to C:\cctv_dashboard\)
+═══════════════════════════════════════════════════════════
+
+  C:\cctv_dashboard\
+  ├── app.py                    ← Main Flask application
+  ├── nvr_config.json           ← DVR/NVR credentials
+  ├── START_DASHBOARD.bat       ← Manual start (double-click)
+  ├── templates\
+  │   ├── index.html            ← Main dashboard UI
+  │   └── login.html            ← Login page
+  ├── static\                   ← CSS/JS assets
+  ├── snapshots\                ← Camera snapshots (auto-created)
+  │   └── 2026-04-24\          ← Organised by date
+  │       └── AGDVR_1\         ← Then by DVR name
+  │           └── Ch01_*.jpg
+  └── db\
+      └── cctv.db               ← SQLite database (auto-created)
+
+
+NETWORK ACCESS — Allow Port 5000 Through Windows Firewall
+══════════════════════════════════════════════════════════
+
+Run in Command Prompt as Administrator:
+  netsh advfirewall firewall add rule name="CCTV Dashboard" dir=in action=allow protocol=TCP localport=5000
+
+OR through Windows Defender Firewall:
+  1. Open "Windows Defender Firewall with Advanced Security"
+  2. Click "Inbound Rules" → "New Rule"
+  3. Type: Port → TCP → 5000 → Allow → All profiles
+  4. Name: CCTV Dashboard
+
+
+TROUBLESHOOTING
+═══════════════
+
+Problem: "flask not found" / "module not found"
+  Fix: pip install flask requests openpyxl urllib3 pillow opencv-python
+
+Problem: Port 5000 already in use
+  Fix: Change port in app.py last line to 5001:
+    app.run(..., port=5001, ...)
+
+Problem: Cannot access from another PC
+  Fix: Check firewall rule above. Also make sure both PCs are on same network.
+
+Problem: Snapshots folder not created
+  Fix: Make sure Python has write permission to C:\cctv_dashboard\
+
+Problem: Database empty / history not saving
+  Fix: Run pm2 logs cctv-dashboard to check for errors
+       Check that db\ folder exists and is writable
+
+Problem: PM2 not found after restart
+  Fix: Re-run: npm install -g pm2 && pm2-startup install && pm2 resurrect
+
+
+UPDATING THE APP
+════════════════
+  1. Replace app.py and template files with new versions
+  2. Run: pm2 restart cctv-dashboard
+  3. Check: pm2 logs cctv-dashboard
+
+═══════════════════════════════════════════════════════════════════
